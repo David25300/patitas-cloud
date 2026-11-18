@@ -1,4 +1,4 @@
-# Configuración inicial (una sola vez) para que GitHub Actions despliegue en Azure con OIDC.
+﻿# Configuración inicial (una sola vez) para que GitHub Actions despliegue en Azure con OIDC.
 # Es el único paso manual del proyecto: después todo se despliega desde el pipeline.
 # Requisitos: az login (Propietario de la suscripción) y gh auth login.
 param(
