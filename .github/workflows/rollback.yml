@@ -1,0 +1,31 @@
+name: Rollback
+
+# Vuelve a desplegar una versión anterior (commit o etiqueta) en el ambiente elegido.
+# Se ejecuta a mano desde la pestaña Actions → Rollback → Run workflow.
+on:
+  workflow_dispatch:
+    inputs:
+      ambiente:
+        description: Ambiente
+        required: true
+        type: choice
+        options: [prod, dev]
+      ref:
+        description: SHA del commit o etiqueta que estaba funcionando
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  rollback:
+    name: Rollback a ${{ inputs.ref }}
+    uses: ./.github/workflows/deploy.yml
+    with:
+      ambiente: ${{ inputs.ambiente }}
+      ref: ${{ inputs.ref }}
+    secrets: inherit
+    permissions:
+      id-token: write
+      contents: read

@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Veterinaria Patitas · Citas</title>
+  <meta name="description" content="Agenda en línea de citas de la Veterinaria Patitas.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="encabezado">
+    <div class="contenedor encabezado__contenido">
+      <img src="favicon.svg" alt="" class="logo" width="40" height="40">
+      <div>
+        <h1>Veterinaria Patitas</h1>
+        <p class="subtitulo">Agenda tu cita en línea · L-V 8:00-18:00 · Sáb 8:00-13:00</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="contenedor rejilla">
+    <section class="tarjeta" aria-labelledby="titulo-agendar">
+      <h2 id="titulo-agendar">Agendar una cita</h2>
+      <form id="form-cita" novalidate>
+        <fieldset>
+          <legend>Tu mascota</legend>
+          <div class="fila">
+            <label>Nombre de la mascota
+              <input name="mascotaNombre" required maxlength="40" autocomplete="off">
+            </label>
+            <label>Especie
+              <select name="especie" required>
+                <option value="perro">Perro</option>
+                <option value="gato">Gato</option>
+                <option value="ave">Ave</option>
+                <option value="otro">Otro</option>
+              </select>
+            </label>
+          </div>
+          <label>Motivo de la consulta
+            <textarea name="motivo" required minlength="3" maxlength="300" rows="2" placeholder="Ej.: vacuna anual, control, cojea de una pata…"></textarea>
+          </label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Fecha y hora</legend>
+          <div class="fila">
+            <label>Fecha
+              <input type="date" name="fecha" id="fecha" required>
+            </label>
+            <label>Hora
+              <select name="hora" id="hora" required disabled>
+                <option value="">Elige una fecha</option>
+              </select>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Tus datos</legend>
+          <label>Nombre completo
+            <input name="duenoNombre" required minlength="3" maxlength="80" autocomplete="name">
+          </label>
+          <div class="fila">
+            <label>Correo electrónico
+              <input type="email" name="duenoEmail" required maxlength="120" autocomplete="email">
+            </label>
+            <label>Teléfono
+              <input type="tel" name="duenoTelefono" required maxlength="20" autocomplete="tel">
+            </label>
+          </div>
+          <label class="consentimiento">
+            <input type="checkbox" name="aceptaTratamientoDatos" required>
+            <span>Autorizo el tratamiento de mis datos personales según la
+              <a href="privacidad.html" target="_blank" rel="noopener">política de tratamiento de datos</a>
+              (Ley 1581 de 2012).</span>
+          </label>
+        </fieldset>
+
+        <button type="submit" id="boton-agendar">Agendar cita</button>
+        <div id="mensaje" class="mensaje" role="status" aria-live="polite" hidden></div>
+      </form>
+    </section>
+
+    <section class="tarjeta" aria-labelledby="titulo-citas">
+      <div class="cabecera-lista">
+        <h2 id="titulo-citas">Próximas citas</h2>
+        <label class="filtro">Filtrar por fecha
+          <input type="date" id="filtro-fecha">
+        </label>
+      </div>
+      <p class="nota">Por privacidad solo se muestran las iniciales del dueño.</p>
+      <div id="lista-estado" class="vacio">Cargando citas…</div>
+      <table id="tabla-citas" hidden>
+        <thead>
+          <tr><th>Fecha</th><th>Hora</th><th>Mascota</th><th>Dueño</th><th>Motivo</th></tr>
+        </thead>
+        <tbody id="cuerpo-citas"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer class="pie">
+    <div class="contenedor">
+      Veterinaria Patitas · Bogotá · <span id="version">conectando…</span>
+    </div>
+  </footer>
+</body>
+</html>

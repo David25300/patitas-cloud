@@ -1,0 +1,30 @@
+{
+  "name": "patitas-api",
+  "version": "1.0.0",
+  "description": "API de citas de la Veterinaria Patitas (Azure Functions v4)",
+  "private": true,
+  "main": "dist/src/functions/*.js",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "start": "func start"
+  },
+  "dependencies": {
+    "@azure/cosmos": "^4.10.2",
+    "@azure/functions": "^4.17.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.0",
+    "@types/node": "^22.20.5",
+    "eslint": "^10.0.0",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.73.0",
+    "vitest": "^5.1.0"
+  }
+}

@@ -1,0 +1,81 @@
+name: Despliegue
+
+# Workflow reutilizable: lo llaman ci-cd.yml (despliegue normal) y rollback.yml (volver a una versión anterior).
+on:
+  workflow_call:
+    inputs:
+      ambiente:
+        description: dev o prod
+        required: true
+        type: string
+      ref:
+        description: Commit, rama o etiqueta a desplegar (por defecto, el commit que disparó el workflow)
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  RESOURCE_GROUP: rg-patitas
+
+jobs:
+  deploy:
+    name: Infraestructura, aplicación y smoke test
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.ambiente }}
+      url: ${{ steps.infra.outputs.url }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+
+      - name: Versión a desplegar
+        id: version
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Iniciar sesión en Azure (OIDC, sin secretos de larga duración)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Desplegar infraestructura (Bicep)
+        id: infra
+        env:
+          ALERT_EMAIL: ${{ vars.ALERT_EMAIL }}
+          APP_VERSION: ${{ steps.version.outputs.sha }}
+        run: |
+          salida=$(az deployment group create \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "patitas-${{ inputs.ambiente }}-${{ github.run_number }}" \
+            --parameters "infra/main.${{ inputs.ambiente }}.bicepparam" \
+            --query properties.outputs --output json)
+          echo "nombre=$(echo "$salida" | jq -r .staticWebAppName.value)" >> "$GITHUB_OUTPUT"
+          echo "url=https://$(echo "$salida" | jq -r .staticWebAppHostname.value)" >> "$GITHUB_OUTPUT"
+
+      - name: Obtener token de despliegue de Static Web Apps
+        run: |
+          token=$(az staticwebapp secrets list \
+            --name "${{ steps.infra.outputs.nombre }}" \
+            --resource-group "$RESOURCE_GROUP" \
+            --query properties.apiKey --output tsv)
+          echo "::add-mask::$token"
+          echo "SWA_TOKEN=$token" >> "$GITHUB_ENV"
+
+      - name: Desplegar web y API
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ env.SWA_TOKEN }}
+          action: upload
+          app_location: web
+          api_location: api
+          output_location: ""
+          skip_app_build: true
+
+      - name: Smoke test
+        run: bash scripts/smoke-test.sh "${{ steps.infra.outputs.url }}" "${{ steps.version.outputs.sha }}"

@@ -1,0 +1,88 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+    paths-ignore:
+      - "docs/**"
+      - "**.md"
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cicd-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-test:
+    name: Build, lint y pruebas
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: api/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Verificar tipos
+        run: npm run typecheck
+
+      - name: Pruebas unitarias
+        run: npm test
+
+      - name: Compilar
+        run: npm run build
+
+      - name: Validar Bicep
+        working-directory: .
+        run: az bicep build --file infra/main.bicep --stdout > /dev/null
+
+  iac-security:
+    name: Análisis de seguridad de la IaC (Checkov)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: infra
+          framework: bicep
+          soft_fail: true
+
+  deploy-dev:
+    name: Desplegar a dev
+    needs: build-test
+    if: github.ref == 'refs/heads/develop' && github.event_name != 'pull_request'
+    uses: ./.github/workflows/deploy.yml
+    with:
+      ambiente: dev
+    secrets: inherit
+    permissions:
+      id-token: write
+      contents: read
+
+  deploy-prod:
+    name: Desplegar a prod
+    needs: build-test
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    uses: ./.github/workflows/deploy.yml
+    with:
+      ambiente: prod
+    secrets: inherit
+    permissions:
+      id-token: write
+      contents: read
