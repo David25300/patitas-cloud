@@ -36,12 +36,16 @@ $clientId = az identity show --name $Identity --resource-group $ResourceGroup --
 $principalId = az identity show --name $Identity --resource-group $ResourceGroup --query principalId -o tsv
 
 # 4. Federated credentials: solo los jobs de los environments dev y prod de este repositorio
-#    pueden pedir un token de Azure.
+#    pueden pedir un token de Azure. Los repos nuevos de GitHub firman el token con IDs
+#    inmutables del dueño y del repo: repo:dueño@idDueño/repo@idRepo:environment:<ambiente>
+$ownerId = gh api "repos/$Repo" --jq ".owner.id"
+$repoId = gh api "repos/$Repo" --jq ".id"
+$owner, $nombreRepo = $Repo.Split("/")
 foreach ($ambiente in "dev", "prod") {
   Invoke-Az identity federated-credential create --name "github-$ambiente" `
     --identity-name $Identity --resource-group $ResourceGroup `
     --issuer "https://token.actions.githubusercontent.com" `
-    --subject "repo:${Repo}:environment:$ambiente" `
+    --subject "repo:$owner@$ownerId/$nombreRepo@${repoId}:environment:$ambiente" `
     --audiences "api://AzureADTokenExchange" --output none
 }
 
