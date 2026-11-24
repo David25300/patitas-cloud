@@ -47,8 +47,19 @@ web/            Frontend estático + staticwebapp.config.json (cabeceras de segu
 infra/          Bicep y parámetros por ambiente
 scripts/        smoke-test.sh
 .github/        Workflows de CI/CD, rollback, CodeQL y Dependabot
-docs/           HLD, diagramas y costos
+docs/           HLD, diagramas, costos y presentación
 ```
+
+## Entregables
+
+| Entregable | Dónde |
+|---|---|
+| HLD con 5 ADR | [docs/HLD-Veterinaria-Patitas.pdf](docs/HLD-Veterinaria-Patitas.pdf) |
+| Diagramas (draw.io + PNG) | [docs/diagramas/](docs/diagramas/) |
+| Costos y FinOps | [docs/costos/costos-patitas.xlsx](docs/costos/costos-patitas.xlsx) · [calculadora oficial de Azure](https://azure.com/e/4825d259dd8444e7afac1b11d2e23315) ([export](docs/costos/calculadora-azure-produccion.xlsx)) |
+| Diseño de despliegue | Sección 9 del HLD y [diagrama del pipeline](docs/diagramas/04-pipeline-despliegue.png) |
+| Código, workflow e IaC | [api/](api/), [web/](web/), [.github/workflows/](.github/workflows/), [infra/](infra/) |
+| Presentación | [docs/presentacion/Patitas-sustentacion.pptx](docs/presentacion/Patitas-sustentacion.pptx) |
 
 ## Correr en local
 
